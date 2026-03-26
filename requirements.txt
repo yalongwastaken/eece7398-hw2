@@ -1,0 +1,7 @@
+openai-whisper
+kokoro
+sounddevice
+numpy
+pyyaml
+torch
+torchaudio

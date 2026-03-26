@@ -1,0 +1,18 @@
+llm:
+  model_path: models/qwen2.5-7b-instruct-q4_k_m.gguf
+  n_ctx: 2048
+  n_threads: 8
+  n_gpu_layers: 35
+  max_tokens: 512
+
+asr:
+  model: small
+  language: en
+
+tts:
+  model: kokoro
+  voice: af_heart
+  sample_rate: 24000
+
+pipeline:
+  log_timings: true

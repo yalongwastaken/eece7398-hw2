@@ -1,0 +1,29 @@
+# models and weights
+models/*
+!models/README.md
+*.gguf
+*.bin
+*.safetensors
+*.pt
+*.pth
+
+# llama.cpp build
+llama.cpp/
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# audio files
+*.wav
+*.mp3
+*.flac
+*.ogg
+
+# misc
+.DS_Store
+*.log
+slurm-*.out
