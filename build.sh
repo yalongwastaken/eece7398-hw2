@@ -24,17 +24,11 @@ mkdir -p build && cd build
 if [ "$OS" = "Darwin" ]; then
     echo "[build] macOS detected — building with Metal..."
     SDK=$(xcrun --show-sdk-path)
-    CC=$(xcrun -f clang)
-    CXX=$(xcrun -f clang++)
     cmake .. \
         -DGGML_METAL=ON \
-        -DCMAKE_BUILD_TYPE=Release \
         -DGGML_CCACHE=OFF \
-        -DCMAKE_OSX_SYSROOT="$SDK" \
-        -DCMAKE_C_COMPILER="$CC" \
-        -DCMAKE_CXX_COMPILER="$CXX" \
-        -DCMAKE_CXX_FLAGS="-isysroot $SDK -stdlib=libc++" \
-        -DCMAKE_C_FLAGS="-isysroot $SDK"
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_OSX_SYSROOT="$SDK"
 else
     echo "[build] Linux detected — building with CUDA..."
     cmake .. \

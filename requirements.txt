@@ -1,6 +1,16 @@
+# ASR
 openai-whisper
+
+# LLM (model download)
+huggingface-hub
+
+# TTS
 kokoro
+
+# audio I/O
 sounddevice
+
+# core
 numpy
 pyyaml
 torch

@@ -13,42 +13,53 @@ mic input → Whisper (ASR) → Qwen2.5-7B (LLM) → Kokoro (TTS) → audio outp
 
 ```
 eece7398-hw2/
-├── build.sh              # OS-aware llama.cpp build script
+├── build.sh              # OS-aware llama.cpp build script (CUDA on Explorer, Metal on Mac)
 ├── requirements.txt      # Python dependencies
 ├── config.yaml           # model paths and settings
-├── models/               # model weights (gitignored)
-├── scripts/              # SBATCH job scripts
+├── models/               # model weights (gitignored, contents only)
+├── scripts/
+│   └── download_models.sh  # downloads all model weights from HuggingFace
 ├── src/                  # ASR, LLM, TTS modules + pipeline
 ├── benchmark/            # timing and evaluation scripts
 ├── ui/                   # frontend (bonus)
 └── report/               # report assets
 ```
 
+## Requirements
+
+- Python 3.12
+- CMake
+- Xcode Command Line Tools (`xcode-select --install`)
+- CUDA toolkit (Explorer only)
+
 ## Setup
 
-### Explorer (HPC)
-
-```bash
-git clone https://github.com/yalongwastaken/eece7398-hw2.git
-cd eece7398-hw2
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-bash build.sh
-```
-
 ### macOS (Apple Silicon)
+
+> Tested on macOS 26 (Tahoe) with Xcode Command Line Tools.
 
 ```bash
 git clone <repo-url>
 cd eece7398-hw2
-python3 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 bash build.sh
+bash scripts/download_models.sh
 ```
 
-Download Qwen2.5-7B Q4_K_M from HuggingFace into `models/`.
+### Explorer (HPC)
+
+```bash
+git clone <repo-url>
+cd eece7398-hw2
+module load cuda  # load appropriate CUDA module
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+bash build.sh
+bash scripts/download_models.sh
+```
 
 ## Usage
 
@@ -66,11 +77,17 @@ python benchmark/benchmark.py --component tts
 
 ## Models
 
-| Component | Model | Format |
-|-----------|-------|--------|
-| ASR | Whisper small | openai-whisper |
-| LLM | Qwen2.5-7B-Instruct | Q4_K_M GGUF |
-| TTS | Kokoro | - |
+| Component | Model | Source | Format |
+|-----------|-------|--------|--------|
+| ASR | Whisper small | openai-whisper | - |
+| LLM | Qwen2.5-7B-Instruct | bartowski/Qwen2.5-7B-Instruct-GGUF | Q4_K_M GGUF |
+| TTS | Kokoro | kokoro pip package | - |
+
+## Notes
+
+- `llama.cpp/` is cloned and built locally by `build.sh` (gitignored)
+- Model weights go in `models/` (gitignored)
+- `build.sh` auto-detects OS and builds with Metal (Mac) or CUDA (Linux)
 
 ## Authors
 
