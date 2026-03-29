@@ -23,6 +23,9 @@ __pycache__/
 *.flac
 *.ogg
 
+# test outputs
+test/output_*.wav
+
 # misc
 .DS_Store
 *.log
