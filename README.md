@@ -13,16 +13,19 @@ mic input → Whisper (ASR) → Qwen2.5-7B (LLM) → Kokoro (TTS) → audio outp
 
 ```
 eece7398-hw2/
-├── build.sh              # OS-aware llama.cpp build script (CUDA on Explorer, Metal on Mac)
-├── requirements.txt      # Python dependencies
-├── config.yaml           # model paths and settings
-├── models/               # model weights (gitignored, contents only)
+├── build.sh                  # OS-aware llama.cpp build script (CUDA on Explorer, Metal on Mac)
+├── requirements.txt          # Python dependencies
+├── config.yaml               # model paths and settings
+├── models/                   # model weights (gitignored, contents only)
 ├── scripts/
-│   └── download_models.sh  # downloads all model weights from HuggingFace
-├── src/                  # ASR, LLM, TTS modules + pipeline
-├── benchmark/            # timing and evaluation scripts
-├── ui/                   # frontend (bonus)
-└── report/               # report assets
+│   └── download_models.sh    # downloads all model weights from HuggingFace
+├── src/                      # ASR, LLM, TTS modules + pipeline
+├── test/                     # per-component sanity check scripts
+│   ├── test_llm.py
+│   └── test_asr.py
+├── benchmark/                # timing and evaluation scripts
+├── ui/                       # frontend (bonus)
+└── report/                   # report assets
 ```
 
 ## Requirements
@@ -48,17 +51,32 @@ bash build.sh
 bash scripts/download_models.sh
 ```
 
+> **SSL fix (python.org installs only):** If you get `SSL: CERTIFICATE_VERIFY_FAILED` when downloading models, run:
+> ```bash
+> /Applications/Python\ 3.12/Install\ Certificates.command
+> ```
+
 ### Explorer (HPC)
 
 ```bash
 git clone <repo-url>
 cd eece7398-hw2
-module load cuda  # load appropriate CUDA module
+module load cuda
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 bash build.sh
 bash scripts/download_models.sh
+```
+
+## Testing
+
+Run per-component sanity checks:
+
+```bash
+source .venv/bin/activate
+python test/test_llm.py
+python test/test_asr.py
 ```
 
 ## Usage
@@ -88,6 +106,7 @@ python benchmark/benchmark.py --component tts
 - `llama.cpp/` is cloned and built locally by `build.sh` (gitignored)
 - Model weights go in `models/` (gitignored)
 - `build.sh` auto-detects OS and builds with Metal (Mac) or CUDA (Linux)
+- Whisper runs in FP32 mode on CPU (FP16 not supported outside of CUDA)
 
 ## Authors
 

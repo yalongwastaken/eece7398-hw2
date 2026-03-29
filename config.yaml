@@ -8,6 +8,7 @@ llm:
 asr:
   model: small
   language: en
+  fp16: false
 
 tts:
   model: kokoro

@@ -9,6 +9,7 @@ kokoro
 
 # audio I/O
 sounddevice
+soundfile
 
 # core
 numpy
