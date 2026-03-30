@@ -25,6 +25,9 @@ __pycache__/
 
 # test outputs
 test/output_*.wav
+test/clone_*.wav
+test/custom_voice.pt
+test/lora_voice.pt
 benchmark/tts_*.wav
 
 # misc
