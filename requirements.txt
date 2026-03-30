@@ -1,8 +1,9 @@
 # ASR
 openai-whisper
 
-# LLM (model download)
+# LLM inference
 huggingface-hub
+requests
 
 # TTS
 kokoro
