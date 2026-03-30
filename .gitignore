@@ -25,6 +25,7 @@ __pycache__/
 
 # test outputs
 test/output_*.wav
+benchmark/tts_*.wav
 
 # misc
 .DS_Store

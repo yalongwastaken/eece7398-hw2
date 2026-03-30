@@ -19,11 +19,17 @@ eece7398-hw2/
 ├── models/                   # model weights (gitignored, contents only)
 ├── scripts/
 │   └── download_models.sh    # downloads all model weights from HuggingFace
-├── src/                      # ASR, LLM, TTS modules + pipeline
-├── test/                     # per-component sanity check scripts
-│   ├── test_llm.py
-│   └── test_asr.py
-├── benchmark/                # timing and evaluation scripts
+├── src/
+│   ├── asr.py                # Whisper ASR wrapper
+│   ├── llm.py                # Qwen2.5-7B wrapper via llama-server
+│   ├── tts.py                # Kokoro TTS wrapper
+│   └── pipeline.py           # end-to-end voice Q&A pipeline
+├── test/
+│   ├── test_llm.py           # LLM sanity check
+│   ├── test_asr.py           # ASR sanity check
+│   └── test_tts.py           # TTS sanity check
+├── benchmark/
+│   └── benchmark.py          # per-component benchmarks
 ├── ui/                       # frontend (bonus)
 └── report/                   # report assets
 ```
@@ -69,28 +75,41 @@ bash build.sh
 bash scripts/download_models.sh
 ```
 
-## Testing
-
-Run per-component sanity checks:
-
-```bash
-source .venv/bin/activate
-python test/test_llm.py
-python test/test_asr.py
-```
-
 ## Usage
 
+### Run the pipeline
+
 ```bash
 source .venv/bin/activate
 
-# run full pipeline
-python src/pipeline.py
+# start the LLM server (keep running in a separate terminal)
+./llama.cpp/build/bin/llama-server \
+    -m models/Qwen2.5-7B-Instruct-Q4_K_M.gguf \
+    -ngl 35 -c 2048 -t 8 \
+    --host 127.0.0.1 --port 8080 --log-disable
 
-# benchmark individual components
-python benchmark/benchmark.py --component llm
+# run the pipeline
+python src/pipeline.py
+```
+
+Press Enter to start recording, speak your question, press Enter to stop.
+
+### Run tests
+
+```bash
+python test/test_llm.py
+python test/test_asr.py
+python test/test_tts.py
+```
+
+### Run benchmarks
+
+```bash
+# start llama-server first (see above), then:
 python benchmark/benchmark.py --component asr
+python benchmark/benchmark.py --component llm
 python benchmark/benchmark.py --component tts
+python benchmark/benchmark.py --component all
 ```
 
 ## Models
@@ -99,14 +118,15 @@ python benchmark/benchmark.py --component tts
 |-----------|-------|--------|--------|
 | ASR | Whisper small | openai-whisper | - |
 | LLM | Qwen2.5-7B-Instruct | bartowski/Qwen2.5-7B-Instruct-GGUF | Q4_K_M GGUF |
-| TTS | Kokoro | kokoro pip package | - |
+| TTS | Kokoro | hexgrad/Kokoro-82M | - |
 
 ## Notes
 
 - `llama.cpp/` is cloned and built locally by `build.sh` (gitignored)
 - Model weights go in `models/` (gitignored)
 - `build.sh` auto-detects OS and builds with Metal (Mac) or CUDA (Linux)
-- Whisper runs in FP32 mode on CPU (FP16 not supported outside of CUDA)
+- Whisper runs in FP32 mode on CPU (FP16 requires CUDA)
+- LLM inference runs via `llama-server` HTTP API on localhost:8080
 
 ## Authors
 
