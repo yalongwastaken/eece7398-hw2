@@ -62,19 +62,6 @@ bash scripts/download_models.sh
 > /Applications/Python\ 3.12/Install\ Certificates.command
 > ```
 
-### Explorer (HPC)
-
-```bash
-git clone <repo-url>
-cd eece7398-hw2
-module load cuda
-python3.12 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-bash build.sh
-bash scripts/download_models.sh
-```
-
 ## Usage
 
 ### Run the pipeline
@@ -112,6 +99,33 @@ python benchmark/benchmark.py --component tts
 python benchmark/benchmark.py --component all
 ```
 
+## Benchmark Results (Apple M3 Pro, macOS 26, Metal backend)
+
+### ASR — Whisper small
+
+| Metric | Value |
+|--------|-------|
+| WER | 0.00 |
+| Mean RTF | 0.166 |
+| Throughput | 8.8x real-time |
+| Mean latency | 0.59s |
+
+### LLM — Qwen2.5-7B-Instruct Q4_K_M
+
+| Metric | Value |
+|--------|-------|
+| Generation speed | ~28 tok/s |
+| Mean latency | 1.40s |
+| Prompt processing | 19–120 tok/s |
+
+### TTS — Kokoro (af_heart)
+
+| Metric | Value |
+|--------|-------|
+| Mean RTF | 0.140 |
+| Throughput | 7.1x real-time |
+| Mean synthesis time | 0.85s |
+
 ## Models
 
 | Component | Model | Source | Format |
@@ -127,7 +141,3 @@ python benchmark/benchmark.py --component all
 - `build.sh` auto-detects OS and builds with Metal (Mac) or CUDA (Linux)
 - Whisper runs in FP32 mode on CPU (FP16 requires CUDA)
 - LLM inference runs via `llama-server` HTTP API on localhost:8080
-
-## Authors
-
-Anthony — Northeastern University, EECE7398
