@@ -8,8 +8,8 @@ requests
 # TTS
 kokoro
 
-# audio I/O
-sounddevice
+# UI
+gradio
 soundfile
 
 # core
