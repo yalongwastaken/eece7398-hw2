@@ -1,0 +1,98 @@
+{
+  "baseline": [
+    {
+      "question": "What is debouncing in embedded systems?",
+      "response": "Debouncing is a common technique used in embedded systems to improve the reliability of digital inputs, especially those that are prone to producing multiple signals (or \"bounces\") when a mechanical switch is actuated. This is particularly important in applications where the input signal is used to control the behavior of the system, such as in buttons, switches, or sensors.\n\n### Why Debouncing is Necessary\n\nMechanical switches, such as those found in buttons, can produce multiple signals when they are pressed or released due to the physical movement of the switch contacts. This phenomenon is known as switch bounce. The bouncing can result in multiple transitions of the input",
+      "tokens": 128,
+      "latency": 4.635
+    },
+    {
+      "question": "Explain I2C communication.",
+      "response": "I2C (Inter-Integrated Circuit) is a serial communication protocol used for connecting low-speed peripheral devices such as sensors, displays, and other integrated circuits on a single board. It was developed by Philips Semiconductor and is widely used in embedded systems and microcontroller applications.\n\n### Key Features of I2C:\n1. **Two-Wire Communication**: I2C uses only two wires for communication: SDA (Serial Data Line) and SCL (Serial Clock Line). These wires are shared by all devices on the bus.\n2. **Master-Slave Architecture**: One device acts as the master (initiates communication) and the",
+      "tokens": 128,
+      "latency": 4.515
+    },
+    {
+      "question": "What is a watchdog timer used for?",
+      "response": "A watchdog timer is a hardware or software component used to monitor the operation of a system, particularly in embedded systems and microcontrollers. Its primary function is to ensure that the system remains responsive and does not get stuck in an infinite loop or other unrecoverable state. Here are some key uses of a watchdog timer:\n\n1. **System Stability**: It helps maintain system stability by ensuring that the system does not enter an unrecoverable state. If the system fails to reset the watchdog timer within a specified period, the watchdog timer will trigger a reset, which can help the system recover.\n\n2. **Fault Detection**: The watchdog timer can detect",
+      "tokens": 128,
+      "latency": 4.55
+    },
+    {
+      "question": "What is the difference between microcontrollers and microprocessors?",
+      "response": "Microcontrollers and microprocessors are both types of integrated circuits (ICs) used in electronic systems, but they have distinct differences in their design, functionality, and applications.\n\n### Microprocessors:\n1. **Definition**: A microprocessor is the central processing unit (CPU) of a computer or other device. It performs arithmetic, logic, control, and input/output (I/O) operations.\n2. **Functionality**: It primarily handles the processing of data and instructions. It fetches instructions from memory, decodes them, and executes them.\n3. **Memory**: Microprocessors typically do not have their own internal memory; they rely on",
+      "tokens": 128,
+      "latency": 4.532
+    },
+    {
+      "question": "What does RTOS stand for and why is it used?",
+      "response": "RTOS stands for Real-Time Operating System. It is a specialized type of operating system designed to manage real-time applications with strict timing requirements. Real-time applications are those where the system must respond to input within a specific time frame to be considered effective or useful.\n\nRTOSes are used in various applications where timely response and deterministic behavior are critical. Here are some reasons why RTOSes are used:\n\n1. **Deterministic Performance**: RTOSes are designed to provide predictable and consistent performance. This is crucial in real-time systems where the timing of events can significantly impact the system's functionality. For example, in automotive systems, the timing of actions",
+      "tokens": 128,
+      "latency": 4.528
+    }
+  ],
+  "constrained": [
+    {
+      "question": "What is debouncing in embedded systems?",
+      "response": "Debouncing in embedded systems refers to techniques used to eliminate bounce or contact chatter from switches or buttons, ensuring that inputs are registered correctly and only once per press.",
+      "tokens": 34,
+      "latency": 1.387
+    },
+    {
+      "question": "Explain I2C communication.",
+      "response": "I2C (Inter-Integrated Circuit) is a serial communication protocol used for connecting multiple devices on a bus, allowing them to communicate and share data with a master device while using only two data lines: SDA (Serial Data) and SCL (Serial Clock).",
+      "tokens": 55,
+      "latency": 2.005
+    },
+    {
+      "question": "What is a watchdog timer used for?",
+      "response": "A watchdog timer is used to ensure that a system, particularly embedded systems, resets itself if it gets stuck in an infinite loop or malfunctions.",
+      "tokens": 30,
+      "latency": 1.144
+    },
+    {
+      "question": "What is the difference between microcontrollers and microprocessors?",
+      "response": "Microcontrollers integrate the central processing unit (CPU), memory, and input/output (I/O) peripherals on a single chip, making them self-contained and easier to use in embedded systems. Microprocessors, on the other hand, are the CPU cores without integrated memory or peripherals, requiring external components to function in a system.",
+      "tokens": 65,
+      "latency": 2.353
+    },
+    {
+      "question": "What does RTOS stand for and why is it used?",
+      "response": "RTOS stands for Real-Time Operating System. It is used to manage and schedule tasks in embedded systems where timely response to events is crucial.",
+      "tokens": 28,
+      "latency": 1.08
+    }
+  ],
+  "enhanced": [
+    {
+      "question": "What is debouncing in embedded systems?",
+      "response": "Debouncing is a technique used to eliminate bounce artifacts in digital inputs, ensuring that the input is stable before it is processed. For example, in a keyboard, debouncing ensures that each key press is registered only once.",
+      "tokens": 46,
+      "latency": 2.138
+    },
+    {
+      "question": "Explain I2C communication.",
+      "response": "I2C is a serial communication protocol used to connect multiple devices on a single bus. For example, it's used to communicate with sensors or other peripherals on a microcontroller.",
+      "tokens": 37,
+      "latency": 1.388
+    },
+    {
+      "question": "What is a watchdog timer used for?",
+      "response": "A watchdog timer is used to ensure that a system resets if it gets stuck in an infinite loop or malfunctions. For example, in embedded systems, it helps prevent software crashes by timing the application's response and forcing a reset if the application fails to acknowledge the watchdog within a set period.",
+      "tokens": 59,
+      "latency": 2.15
+    },
+    {
+      "question": "What is the difference between microcontrollers and microprocessors?",
+      "response": "Microcontrollers are integrated circuits that include a microprocessor core, memory, and input/output peripherals on a single chip, designed for controlling devices or systems. Microprocessors, on the other hand, are the central processing units in computers and other devices that execute instructions and perform calculations but do not include memory or peripheral interfaces. For example, a microcontroller might control a washing machine, while a microprocessor is found in a desktop computer.",
+      "tokens": 87,
+      "latency": 3.116
+    },
+    {
+      "question": "What does RTOS stand for and why is it used?",
+      "response": "RTOS stands for Real-Time Operating System. It is used to manage and schedule tasks in embedded systems where responses need to be quick and predictable.",
+      "tokens": 29,
+      "latency": 1.112
+    }
+  ]
+}
