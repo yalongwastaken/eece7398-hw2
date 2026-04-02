@@ -1,3 +1,11 @@
+# config.yaml
+# @file    config.yaml
+# @author  Anthony Yalong
+# @nuid    002156860
+# @brief   Central configuration for the voice interaction system.
+#          Contains model paths and inference settings for ASR, LLM, and TTS.
+#          Designed for macOS Apple Silicon (Metal backend).
+
 llm:
   model_path: models/Qwen2.5-7B-Instruct-Q4_K_M.gguf
   n_ctx: 2048
@@ -11,7 +19,6 @@ asr:
   fp16: false
 
 tts:
-  model: kokoro
   voice: af_heart
   sample_rate: 24000
 

@@ -1,67 +1,77 @@
-# benchmark/benchmark.py
-# comprehensive benchmark for ASR, LLM, and TTS components
-# usage: python benchmark/benchmark.py --component [asr|llm|tts|all]
+# @file    benchmark.py
+# @author  Anthony Yalong
+# @nuid    002156860
+# @brief   Comprehensive benchmark for ASR, LLM, and TTS components.
+#          Each sample is run N_RUNS times and results are averaged.
+#          ASR audio is generated via Kokoro TTS for ground-truth transcription.
+#          LLM benchmark requires llama-server running on localhost:8080.
+# @usage   python benchmark/benchmark.py --component [asr|llm|tts|all]
 
+# imports
 import os
 import sys
 import time
 import argparse
+import warnings
+import logging
 import yaml
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-N_RUNS = 5  # number of runs to average per sample
+N_RUNS = 5
 
-# --- test data ---
-
+# test data — ASR ground truth sentences at increasing lengths
 ASR_SAMPLES = [
-    ("Hello.",                                                                                     1.0),
-    ("The quick brown fox jumps over the lazy dog.",                                               3.0),
-    ("Debouncing is a technique used to filter out rapid repeated signals from a button.",         5.0),
-    ("Embedded systems require careful management of hardware resources and real-time constraints.",6.0),
+    ("Hello.", 1.0),
+    ("The quick brown fox jumps over the lazy dog.", 3.0),
+    ("Debouncing is a technique used to filter out rapid repeated signals from a button.", 5.0),
+    ("Embedded systems require careful management of hardware resources and real-time constraints.", 6.0),
     ("An interrupt service routine is a callback function executed by the processor in response "
-     "to a hardware or software interrupt signal.",                                                8.0),
+     "to a hardware or software interrupt signal.", 8.0),
 ]
 
+# test data — LLM prompts at short, medium, and long complexity
 LLM_PROMPTS = [
-    ("What is two plus two?",                                                                      "short"),
-    ("What is debouncing?",                                                                        "short"),
-    ("Explain the difference between RISC and CISC architectures.",                               "medium"),
-    ("How does I2C communication work?",                                                           "medium"),
+    ("What is two plus two?", "short"),
+    ("What is debouncing?", "short"),
+    ("Explain the difference between RISC and CISC architectures.", "medium"),
+    ("How does I2C communication work?", "medium"),
     ("Describe the role of a real-time operating system in embedded systems "
-     "and give two examples of commonly used RTOSes.",                                            "long"),
+     "and give two examples of commonly used RTOSes.", "long"),
 ]
 
+# test data — TTS texts at increasing lengths to measure RTF scaling
 TTS_TEXTS = [
-    ("Hello.",                                                                                     "very_short"),
-    ("How can I assist you today?",                                                                "short"),
-    ("Debouncing filters out rapid repeated signals from a switching device.",                     "medium"),
+    ("Hello.", "very_short"),
+    ("How can I assist you today?", "short"),
+    ("Debouncing filters out rapid repeated signals from a switching device.", "medium"),
     ("Real-time operating systems prioritize tasks based on strict timing deadlines, "
-     "ensuring deterministic behavior in safety-critical applications.",                           "long"),
+     "ensuring deterministic behavior in safety-critical applications.", "long"),
     ("The I squared C protocol uses two wires, a serial data line and a serial clock line, "
      "to enable communication between a master device and one or more slave devices "
-     "on the same bus.",                                                                           "very_long"),
+     "on the same bus.", "very_long"),
 ]
 
+# voices to benchmark for TTS
 TTS_VOICES = ["af_heart", "af_bella", "am_adam"]
 
-def load_config():
+
+def load_config() -> dict:
     cfg_path = os.path.join(os.path.dirname(__file__), "..", "config.yaml")
     with open(cfg_path) as f:
         return yaml.safe_load(f)
 
-def print_stats(label, values):
+
+def print_stats(label: str, values: list[float]) -> None:
+    # print mean, std, min, max for a list of values
     arr = np.array(values)
     print(f"  {label}: mean={arr.mean():.3f}  std={arr.std():.3f}  "
           f"min={arr.min():.3f}  max={arr.max():.3f}")
 
-# --- ASR benchmark ---
 
-def benchmark_asr(cfg):
+def benchmark_asr(cfg: dict) -> None:
     import whisper
-    import warnings
-    import logging
     warnings.filterwarnings("ignore")
     logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
     from kokoro import KPipeline
@@ -71,20 +81,23 @@ def benchmark_asr(cfg):
     print("="*60)
     print(f"  model: {cfg['model']} (avg over {N_RUNS} runs)")
 
+    # load whisper model
     t0 = time.time()
     model = whisper.load_model(cfg["model"])
     print(f"  model load time: {time.time() - t0:.2f}s")
 
+    # generate real speech audio via Kokoro for ground-truth WER evaluation
     print("  generating test audio via Kokoro TTS...")
     tts = KPipeline(lang_code="a", repo_id="hexgrad/Kokoro-82M")
     sr = 16000
 
-    def tts_to_audio(text):
+    def tts_to_audio(text: str) -> np.ndarray:
         chunks = []
         for _, _, audio in tts(text, voice="af_heart", speed=1.0):
             chunks.append(audio)
         audio = np.concatenate(chunks)
-        # resample 24kHz -> 16kHz
+        
+        # resample from Kokoro's 24kHz to Whisper's expected 16kHz
         n = int(len(audio) * sr / 24000)
         return np.interp(np.linspace(0, len(audio), n), np.arange(len(audio)), audio).astype(np.float32)
 
@@ -96,6 +109,7 @@ def benchmark_asr(cfg):
         audio = tts_to_audio(text)
         duration = len(audio) / sr
 
+        # run N_RUNS times and average
         run_times = []
         for _ in range(N_RUNS):
             t0 = time.time()
@@ -106,6 +120,7 @@ def benchmark_asr(cfg):
         rtf = elapsed / duration
         transcript = result["text"].strip()
 
+        # compute simple word error rate
         ref = text.lower().split()
         hyp = transcript.lower().split()
         edits = sum(1 for r, h in zip(ref, hyp) if r != h) + abs(len(ref) - len(hyp))
@@ -124,19 +139,18 @@ def benchmark_asr(cfg):
     print_stats("WER      ", wers)
     print(f"  throughput: {sum(audio_durations)/sum(times):.2f}x real-time")
 
-# --- LLM benchmark ---
-
-def benchmark_llm(cfg):
+def benchmark_llm(cfg: dict) -> None:
     import requests
 
     print("\n" + "="*60)
     print("LLM BENCHMARK — Qwen2.5-7B-Instruct (llama-server)")
     print("="*60)
+
     SERVER_URL = "http://localhost:8080"
     SYSTEM = "You are a helpful assistant. Answer in 1-2 sentences only."
-    MAX_TOKENS = 64  # keep short for benchmarking latency
+    MAX_TOKENS = 64
 
-    print(f"  NOTE: llama-server must be running on localhost:8080")
+    print(f"  note: llama-server must be running on localhost:8080")
     print(f"  max_tokens: {MAX_TOKENS} (avg over {N_RUNS} runs)\n")
 
     times, gen_tps, gen_tokens = [], [], []
@@ -148,12 +162,13 @@ def benchmark_llm(cfg):
             "model": "qwen",
             "messages": [
                 {"role": "system", "content": SYSTEM},
-                {"role": "user",   "content": prompt},
+                {"role": "user", "content": prompt},
             ],
             "max_tokens": MAX_TOKENS,
             "temperature": 0.7,
         }
 
+        # run N_RUNS times and average
         run_times = []
         for _ in range(N_RUNS):
             t0 = time.time()
@@ -163,12 +178,15 @@ def benchmark_llm(cfg):
         elapsed = np.mean(run_times)
         data = resp.json()
         if "choices" not in data:
-            print(f"  [{i+1}] ERROR: unexpected response: {data}")
+            print(f"  [{i+1}] ERROR: {data}")
             continue
+
         response = data["choices"][0]["message"]["content"].strip()
         usage = data.get("usage", {})
         p_tokens = usage.get("prompt_tokens", 0)
         g_tokens = usage.get("completion_tokens", 0)
+
+        # approximate tps from wall time
         p_tps = p_tokens / elapsed if elapsed > 0 else 0
         g_tps = g_tokens / elapsed if elapsed > 0 else 0
 
@@ -183,11 +201,7 @@ def benchmark_llm(cfg):
     print_stats("gen tokens/req  ", gen_tokens)
     print_stats("approx gen tps  ", gen_tps)
 
-# --- TTS benchmark ---
-
-def benchmark_tts(cfg):
-    import warnings
-    import logging
+def benchmark_tts(cfg: dict) -> None:
     import soundfile as sf
     warnings.filterwarnings("ignore")
     logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
@@ -197,6 +211,7 @@ def benchmark_tts(cfg):
     print("TTS BENCHMARK — Kokoro")
     print("="*60)
 
+    # load Kokoro pipeline
     t0 = time.time()
     pipeline = KPipeline(lang_code="a", repo_id="hexgrad/Kokoro-82M")
     print(f"  model load time: {time.time() - t0:.2f}s")
@@ -212,6 +227,7 @@ def benchmark_tts(cfg):
 
         times, rtfs = [], []
         for i, (text, label) in enumerate(TTS_TEXTS):
+            # run N_RUNS times and average
             run_times = []
             audio = None
             for _ in range(N_RUNS):
@@ -228,15 +244,13 @@ def benchmark_tts(cfg):
             times.append(elapsed)
             rtfs.append(rtf)
 
-            out = os.path.join(out_dir, f"tts_{voice}_{label}.wav")
-            sf.write(out, audio, sr)
+            # save sample wav for qualitative listening
+            sf.write(os.path.join(out_dir, f"tts_{voice}_{label}.wav"), audio, sr)
             print(f"  [{i+1}] {label:<12} {duration:>5.2f}s  {elapsed:>6.2f}s  {rtf:>6.3f}")
 
         print(f"  avg RTF: {np.mean(rtfs):.3f}  avg time: {np.mean(times):.2f}s\n")
 
-# --- main ---
-
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--component", choices=["asr", "llm", "tts", "all"], default="all")
     args = parser.parse_args()

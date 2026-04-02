@@ -1,13 +1,17 @@
-# test/test_llm.py
-# quick sanity check for Qwen2.5-7B via llama.cpp
-# usage: python test/test_llm.py
+# @file    test_llm.py
+# @author  Anthony Yalong
+# @nuid    002156860
+# @brief   Sanity check for Qwen2.5-7B via llama-cli. Runs a single prompt
+#          and verifies the binary returns a response without error.
+# @usage   python test/test_llm.py
 
-import subprocess
-import time
-import yaml
+# imports
 import os
+import time
+import subprocess
+import yaml
 
-def main():
+def main() -> None:
     # load config
     cfg_path = os.path.join(os.path.dirname(__file__), "..", "config.yaml")
     with open(cfg_path) as f:

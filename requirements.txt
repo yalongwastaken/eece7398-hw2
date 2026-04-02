@@ -1,16 +1,26 @@
+# requirements.txt
+# @file    requirements.txt
+# @author  Anthony Yalong
+# @nuid    002156860
+# @brief   Python dependencies for the voice interaction system.
+#          Designed for macOS Apple Silicon (Python 3.12).
+
 # ASR
 openai-whisper
 
-# LLM inference
+# LLM
 huggingface-hub
 requests
 
 # TTS
 kokoro
 
+# audio I/O
+sounddevice
+soundfile
+
 # UI
 gradio
-soundfile
 
 # core
 numpy

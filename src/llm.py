@@ -1,13 +1,21 @@
-# src/llm.py
-# Qwen2.5-7B-Instruct wrapper via llama-server HTTP API
+# @file    llm.py
+# @author  Anthony Yalong
+# @nuid    002156860
+# @brief   Qwen2.5-7B-Instruct wrapper via llama-server HTTP API.
+#          Spawns llama-server as a background process on init, waits for it
+#          to become healthy, then exposes a generate() method that sends
+#          requests to the OpenAI-compatible /v1/chat/completions endpoint.
+#          Call shutdown() to terminate the server process on exit.
 
-import subprocess
-import logging
-import requests
-import signal
-import time
+# imports
 import os
+import time
+import signal
+import logging
+import subprocess
+import requests
 
+# logging
 logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
 
 SERVER_URL = "http://localhost:8080"
@@ -17,11 +25,13 @@ SYSTEM_PROMPT = (
 )
 
 class LLM:
-    def __init__(self, cfg):
+    def __init__(self, cfg: dict) -> None:
+        # setup
         root = os.path.join(os.path.dirname(__file__), "..")
         binary = os.path.join(root, "llama.cpp", "build", "bin", "llama-server")
-        model  = os.path.join(root, cfg["model_path"])
+        model = os.path.join(root, cfg["model_path"])
 
+        # build llama-server launch command
         cmd = [
             binary,
             "-m", model,
@@ -34,9 +44,11 @@ class LLM:
         ]
 
         self.max_tokens = cfg["max_tokens"]
+
+        # launch server as background process
         self.proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        # wait for server to be ready
+        # poll health endpoint until server is ready (up to 30s)
         print("[llm] starting server...", end="", flush=True)
         for _ in range(30):
             try:
@@ -49,7 +61,8 @@ class LLM:
         else:
             raise RuntimeError("llama-server failed to start")
 
-    def generate(self, user_text):
+    def generate(self, user_text: str) -> tuple[str, float]:
+        # format as OpenAI-compatible chat completion request
         payload = {
             "model": "qwen",
             "messages": [
@@ -67,7 +80,8 @@ class LLM:
         response = resp.json()["choices"][0]["message"]["content"].strip()
         return response, elapsed
 
-    def shutdown(self):
+    def shutdown(self) -> None:
+        # send SIGTERM to gracefully stop the server process
         if self.proc:
             self.proc.send_signal(signal.SIGTERM)
             self.proc.wait()

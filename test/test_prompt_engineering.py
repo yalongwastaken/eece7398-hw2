@@ -1,9 +1,13 @@
-# test/test_prompt_engineering.py
-# evaluates the effect of prompt engineering on LLM response quality
-# tests 3 system prompts across 5 questions and saves results
-# usage: python test/test_prompt_engineering.py
-# note: llama-server must be running on localhost:8080
+# @file    test_prompt_engineering.py
+# @author  Anthony Yalong
+# @nuid    002156860
+# @brief   Evaluates the effect of prompt engineering on LLM response quality.
+#          Tests 3 system prompts across 5 embedded systems questions and saves
+#          results to a JSON file for report analysis.
+# @note    llama-server must be running on localhost:8080
+# @usage   python test/test_prompt_engineering.py
 
+# imports
 import os
 import sys
 import time
@@ -12,11 +16,10 @@ import requests
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-SERVER_URL = "http://localhost:8080"
+SERVER_URL  = "http://localhost:8080"
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "prompt_engineering_results.json")
 
-# --- system prompts to compare ---
-
+# system prompts to compare
 PROMPTS = {
     "baseline": None,  # no system prompt
 
@@ -36,8 +39,7 @@ PROMPTS = {
     ),
 }
 
-# --- test questions ---
-
+# test questions
 QUESTIONS = [
     "What is debouncing in embedded systems?",
     "Explain I2C communication.",
@@ -46,7 +48,7 @@ QUESTIONS = [
     "What does RTOS stand for and why is it used?",
 ]
 
-def query(system_prompt, user_text, max_tokens=128):
+def query(system_prompt: str | None, user_text: str, max_tokens: int = 128) -> tuple[str, float, int]:
     messages = []
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
@@ -56,7 +58,7 @@ def query(system_prompt, user_text, max_tokens=128):
         "model": "qwen",
         "messages": messages,
         "max_tokens": max_tokens,
-        "temperature": 0.3,  # lower temp for more consistent comparison
+        "temperature": 0.3,  # low temp for consistent comparison
     }
 
     t0 = time.time()
@@ -68,19 +70,19 @@ def query(system_prompt, user_text, max_tokens=128):
     tokens = data.get("usage", {}).get("completion_tokens", 0)
     return text, elapsed, tokens
 
-def main():
+
+def main() -> None:
     print("\n" + "="*70)
     print("PROMPT ENGINEERING EVALUATION")
     print("="*70)
-    print(f"  {len(PROMPTS)} prompts × {len(QUESTIONS)} questions\n")
+    print(f"  {len(PROMPTS)} prompts x {len(QUESTIONS)} questions\n")
 
     results = {}
 
     for prompt_name, system_prompt in PROMPTS.items():
         print(f"\n--- Prompt: {prompt_name} ---")
         if system_prompt:
-            preview = system_prompt[:80].replace('\n', ' ')
-            print(f"  system: \"{preview}...\"")
+            print(f"  system: \"{system_prompt[:80].replace(chr(10), ' ')}...\"")
         else:
             print(f"  system: (none)")
 
@@ -104,18 +106,18 @@ def main():
             print(f"  A:  {response}")
             print(f"      [{tokens} tokens, {elapsed:.2f}s]")
 
-        print(f"\n  avg tokens: {sum(total_tokens)/len(total_tokens):.1f}")
+        print(f"\n  avg tokens:  {sum(total_tokens)/len(total_tokens):.1f}")
         print(f"  avg latency: {sum(total_times)/len(total_times):.2f}s")
 
-    # save results
+    # save full results to json
     with open(OUTPUT_PATH, "w") as f:
         json.dump(results, f, indent=2)
     print(f"\n{'='*70}")
     print(f"results saved to {OUTPUT_PATH}")
 
-    # --- summary table ---
+    # summary table
     print(f"\n{'='*70}")
-    print("SUMMARY — avg tokens per prompt")
+    print("SUMMARY")
     print(f"{'='*70}")
     for pname, entries in results.items():
         avg_tok = sum(e["tokens"] for e in entries) / len(entries)

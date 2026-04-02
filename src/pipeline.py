@@ -1,7 +1,13 @@
-# src/pipeline.py
-# end-to-end voice Q&A pipeline
-# usage: python src/pipeline.py
+# @file    pipeline.py
+# @author  Anthony Yalong
+# @nuid    002156860
+# @brief   End-to-end voice Q&A pipeline. Records mic input on Enter key,
+#          transcribes with Whisper, generates a response with Qwen2.5-7B,
+#          synthesizes speech with Kokoro, and plays it back. Loops until
+#          Ctrl+C.
+# @usage   python src/pipeline.py
 
+# imports
 import os
 import sys
 import time
@@ -14,10 +20,16 @@ from src.asr import ASR
 from src.llm import LLM
 from src.tts import TTS
 
-SAMPLE_RATE = 16000  # whisper expects 16kHz
+SAMPLE_RATE = 16000
 
-def record_until_enter():
-    # record mic audio until user presses Enter
+def load_config() -> dict:
+    cfg_path = os.path.join(os.path.dirname(__file__), "..", "config.yaml")
+    with open(cfg_path) as f:
+        return yaml.safe_load(f)
+
+
+def record_until_enter() -> np.ndarray:
+    # stream mic audio into chunks until user presses Enter
     print("[pipeline] recording... press Enter to stop")
     chunks = []
 
@@ -25,23 +37,20 @@ def record_until_enter():
         chunks.append(indata.copy())
 
     with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, dtype="float32", callback=callback):
-        input()  # block until Enter
+        input()
 
-    audio = np.concatenate(chunks, axis=0).squeeze()
-    return audio
+    return np.concatenate(chunks, axis=0).squeeze()
 
-def play_audio(audio, sample_rate):
+
+def play_audio(audio: np.ndarray, sample_rate: int) -> None:
     sd.play(audio, sample_rate)
     sd.wait()
 
-def load_config():
-    cfg_path = os.path.join(os.path.dirname(__file__), "..", "config.yaml")
-    with open(cfg_path) as f:
-        return yaml.safe_load(f)
 
-def main():
+def main() -> None:
     cfg = load_config()
 
+    # load all models at startup
     print("[pipeline] loading models...")
     t0 = time.time()
     asr = ASR(cfg["asr"])
@@ -82,6 +91,7 @@ def main():
             print("\n[pipeline] exiting.")
             llm.shutdown()
             break
+
 
 if __name__ == "__main__":
     main()

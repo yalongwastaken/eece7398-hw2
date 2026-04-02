@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # @file    build.sh
-# @author  Anthony
-# @brief   clone and build llama.cpp with CUDA (Explorer) or Metal (macOS)
+# @author  Anthony Yalong
+# @nuid    002156860
+# @brief   Clone and build llama.cpp with Metal backend for macOS Apple Silicon.
 # @usage   bash build.sh
 
 set -e
 
-OS="$(uname)"
 LLAMA_DIR="llama.cpp"
 
 # clone if not already present
@@ -21,26 +21,15 @@ fi
 cd "$LLAMA_DIR"
 mkdir -p build && cd build
 
-if [ "$OS" = "Darwin" ]; then
-    echo "[build] macOS detected — building with Metal..."
-    SDK=$(xcrun --show-sdk-path)
-    cmake .. \
-        -DGGML_METAL=ON \
-        -DGGML_CCACHE=OFF \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_OSX_SYSROOT="$SDK"
-else
-    echo "[build] Linux detected — building with CUDA..."
-    cmake .. \
-        -DGGML_CUDA=ON \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CUDA_ARCHITECTURES="70;75;80;86"
-fi
+SDK=$(xcrun --show-sdk-path)
+echo "[build] building with Metal (SDK: $SDK)..."
+cmake .. \
+    -DGGML_METAL=ON \
+    -DGGML_CCACHE=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_OSX_SYSROOT="$SDK"
 
-if [ "$OS" = "Darwin" ]; then
-    JOBS="$(sysctl -n hw.logicalcpu)"
-else
-    JOBS="$(nproc)"
-fi
+JOBS="$(sysctl -n hw.logicalcpu)"
 cmake --build . --config Release -j"$JOBS"
+
 echo "[build] done. binary at llama.cpp/build/bin/llama-cli"
