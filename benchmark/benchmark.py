@@ -19,7 +19,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-N_RUNS = 5
+N_RUNS = 100
 
 # test data — ASR ground truth sentences at increasing lengths
 ASR_SAMPLES = [

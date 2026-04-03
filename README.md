@@ -125,32 +125,9 @@ python benchmark/benchmark.py --component llm
 python benchmark/benchmark.py --component tts
 ```
 
-## Benchmark Results (Apple M3 Pro, macOS 26, Metal)
+## Analysis & Results
 
-### ASR — Whisper small
-
-| Metric | Value |
-|--------|-------|
-| WER | 0.00 |
-| Mean RTF | 0.166 |
-| Throughput | 8.8x real-time |
-| Mean latency | 0.59s |
-
-### LLM — Qwen2.5-7B-Instruct Q4_K_M
-
-| Metric | Value |
-|--------|-------|
-| Generation speed | ~28 tok/s |
-| Mean latency | 1.40s |
-| Prompt processing | 19–120 tok/s |
-
-### TTS — Kokoro (af_heart)
-
-| Metric | Value |
-|--------|-------|
-| Mean RTF | 0.140 |
-| Throughput | 7.1x real-time |
-| Mean synthesis time | 0.85s |
+See `report/yalong_eece7398_hw2.pdf` for full analysis and results.
 
 ## Models
 

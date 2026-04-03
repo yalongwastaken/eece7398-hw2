@@ -34,3 +34,4 @@ benchmark/tts_*.wav
 .DS_Store
 *.log
 slurm-*.out
+*docx
